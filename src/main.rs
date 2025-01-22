@@ -6,8 +6,10 @@ use fuel_core_types::fuel_tx::Bytes32;
 use tokio::sync::broadcast;
 
 mod genesis;
+mod reserved_nodes;
 
 use genesis::*;
+use reserved_nodes::reserved_nodes;
 
 pub unsafe fn from_slice_unchecked<const N: usize>(buf: &[u8]) -> [u8; N] {
     let ptr = buf.as_ptr() as *const [u8; N];
@@ -32,17 +34,9 @@ async fn main() -> anyhow::Result<()> {
     let mut cfg = Config::default("Ignition");
 
     cfg.reserved_nodes_only_mode = true;
-    let reserved_nodes = vec![
-        "/dns/p2p-mainnet.fuel.network/tcp/30336/p2p/16Uiu2HAkxjhwNYtwawWUexYn84MsrA9ivFWkNHmiF4hSieoNP7Jd",
-        "/dns/p2p-mainnet.fuel.network/tcp/30337/p2p/16Uiu2HAmQunK6Dd81BXh3rW2ZsszgviPgGMuHw39vv2XxbkuCfaw",
-        "/dns/p2p-mainnet.fuel.network/tcp/30333/p2p/16Uiu2HAkuiLZNrfecgDYHJZV5LoEtCXqqRCqHY3yLBqs4LQk8jJg",
-        "/dns/p2p-mainnet.fuel.network/tcp/30334/p2p/16Uiu2HAkzYNa6yMykppS1ij69mKoKjrZEr11oHGiM5Mpc8nKjVDM",
-        "/dns/p2p-mainnet.fuel.network/tcp/30335/p2p/16Uiu2HAm5yqpTv1QVk3SepUYzeKXTWMuE2VqMWHq5qQLPR2Udg6s"
-    ].iter().map(|s| s.parse()).map(|r: Result<_, _>| r.unwrap()).collect();
+    cfg.reserved_nodes = reserved_nodes();
 
-    cfg.reserved_nodes = reserved_nodes;
-
-    let (tx, _) = broadcast::channel(1);
+    let (tx, _) = broadcast::channel(5);
     let mut p2p_service = FuelP2PService::new(
         tx,
         cfg.init(genesis).unwrap(),

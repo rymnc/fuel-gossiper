@@ -10,6 +10,10 @@ fuel-core-p2p = "0.41.0"
 tokio = "1.43.0"
 anyhow = "1.0.95"
 fuel-core-types = "0.41.0"
+multiaddr = { git = "https://github.com/rymnc/rust-multiaddr", rev = "48f2065" }
+
+[patch.crates-io]
+multiaddr = { git = "https://github.com/rymnc/rust-multiaddr", rev = "48f2065" }
 
 [build-dependencies]
 fuel-core-types = "0.41.0"

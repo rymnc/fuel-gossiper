@@ -1,3 +1,4 @@
+use fuel_core_p2p::Multiaddr;
 use fuel_core_types::blockchain::consensus::Genesis;
 use fuel_core_types::fuel_tx::Bytes32;
 use std::fs;
@@ -54,39 +55,40 @@ fn main() -> anyhow::Result<()> {
     fs::write(&dest_path, output).map_err(|e| anyhow::anyhow!(e))?;
 
     // // 2. the multiaddrs
-    // let reserved_nodes =  vec![
-    //     "/dns/p2p-mainnet.fuel.network/tcp/30336/p2p/16Uiu2HAkxjhwNYtwawWUexYn84MsrA9ivFWkNHmiF4hSieoNP7Jd",
-    //     "/dns/p2p-mainnet.fuel.network/tcp/30337/p2p/16Uiu2HAmQunK6Dd81BXh3rW2ZsszgviPgGMuHw39vv2XxbkuCfaw",
-    //     "/dns/p2p-mainnet.fuel.network/tcp/30333/p2p/16Uiu2HAkuiLZNrfecgDYHJZV5LoEtCXqqRCqHY3yLBqs4LQk8jJg",
-    //     "/dns/p2p-mainnet.fuel.network/tcp/30334/p2p/16Uiu2HAkzYNa6yMykppS1ij69mKoKjrZEr11oHGiM5Mpc8nKjVDM",
-    //     "/dns/p2p-mainnet.fuel.network/tcp/30335/p2p/16Uiu2HAm5yqpTv1QVk3SepUYzeKXTWMuE2VqMWHq5qQLPR2Udg6s"
-    // ].iter().map(|s| s.parse()).map(|r: Result<_, _>| r.unwrap()).collect::<Vec<Multiaddr>>();
-    //
-    //
-    // let mut reserved_nodes_bytes = Vec::new();
-    //
-    // for node in reserved_nodes {
-    //     let bytes = node.to_vec();
-    //     reserved_nodes_bytes.push(bytes);
-    // }
-    //
-    // let output = format!(
-    //     "\n
-    // /// reserved nodes
-    // pub const RESERVED_NODES: &[[u8]] = &{:?};
-    // pub fn reserved_nodes() -> Vec<fuel_core_p2p::Multiaddr> {{
-    //     unsafe {{ std::mem::transmute_copy(RESERVED_NODES) }}
-    // }}
-    // ",
-    //     reserved_nodes_bytes.iter().map(|inner| inner.as_slice()).collect::<Vec<&[u8]>>().as_slice()
-    // );
-    //
-    //
-    // let dest_path = std::path::Path::new(&out_dir).join("reserved_nodes.rs");
-    //
-    //
-    // fs::write(&dest_path, output).map_err(|e| anyhow::anyhow!(e))?;
-    //
+    let reserved_node_a = Multiaddr::from_str("/dns/p2p-mainnet.fuel.network/tcp/30336/p2p/16Uiu2HAkxjhwNYtwawWUexYn84MsrA9ivFWkNHmiF4hSieoNP7Jd")?;
+    let reserved_node_b = Multiaddr::from_str("/dns/p2p-mainnet.fuel.network/tcp/30337/p2p/16Uiu2HAmQunK6Dd81BXh3rW2ZsszgviPgGMuHw39vv2XxbkuCfaw")?;
+    let reserved_node_c = Multiaddr::from_str( "/dns/p2p-mainnet.fuel.network/tcp/30333/p2p/16Uiu2HAkuiLZNrfecgDYHJZV5LoEtCXqqRCqHY3yLBqs4LQk8jJg")?;
+    let reserved_node_d = Multiaddr::from_str( "/dns/p2p-mainnet.fuel.network/tcp/30334/p2p/16Uiu2HAkzYNa6yMykppS1ij69mKoKjrZEr11oHGiM5Mpc8nKjVDM")?;
+    let reserved_node_e = Multiaddr::from_str( "/dns/p2p-mainnet.fuel.network/tcp/30335/p2p/16Uiu2HAm5yqpTv1QVk3SepUYzeKXTWMuE2VqMWHq5qQLPR2Udg6s")?;
+
+    let reserved_node_a_bytes = reserved_node_a.to_vec();
+    let reserved_node_b_bytes = reserved_node_b.to_vec();
+    let reserved_node_c_bytes = reserved_node_c.to_vec();
+    let reserved_node_d_bytes = reserved_node_d.to_vec();
+    let reserved_node_e_bytes = reserved_node_e.to_vec();
+
+    let output = format!(
+        "\n
+    pub const RESERVED_NODE_A: &'static [u8] = &{:?};
+    pub const RESERVED_NODE_B: &'static [u8] = &{:?};
+    pub const RESERVED_NODE_C: &'static [u8] = &{:?};
+    pub const RESERVED_NODE_D: &'static [u8] = &{:?};
+    pub const RESERVED_NODE_E: &'static [u8] = &{:?};
+    use fuel_core_p2p::Multiaddr;
+    pub fn reserved_nodes() -> Vec<Multiaddr> {{
+        vec![Multiaddr::from_static(RESERVED_NODE_A), Multiaddr::from_static(RESERVED_NODE_B), Multiaddr::from_static(RESERVED_NODE_C), Multiaddr::from_static(RESERVED_NODE_D), Multiaddr::from_static(RESERVED_NODE_E)]
+    }}
+    ",
+        reserved_node_a_bytes,
+        reserved_node_b_bytes,
+        reserved_node_c_bytes,
+        reserved_node_d_bytes,
+        reserved_node_e_bytes
+    );
+
+    let dest_path = std::path::Path::new(&out_dir).join("reserved_nodes.rs");
+
+    fs::write(&dest_path, output).map_err(|e| anyhow::anyhow!(e))?;
 
     Ok(())
 }
