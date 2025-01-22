@@ -1,0 +1,17 @@
+[package]
+name = "fuel-gossiper"
+version = "0.1.0"
+edition = "2021"
+
+build = "build/build.rs"
+
+[dependencies]
+fuel-core-p2p = "0.41.0"
+tokio = "1.43.0"
+anyhow = "1.0.95"
+fuel-core-types = "0.41.0"
+
+[build-dependencies]
+fuel-core-types = "0.41.0"
+anyhow = "1.0.95"
+fuel-core-p2p = "0.41.0"
