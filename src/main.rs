@@ -1,17 +1,16 @@
 use fuel_core_p2p::codecs::postcard::PostcardCodec;
 use fuel_core_p2p::config::Config;
 use fuel_core_p2p::p2p_service::{FuelP2PEvent, FuelP2PService};
-use fuel_core_types::blockchain::consensus::Genesis;
-use fuel_core_types::fuel_tx::Bytes32;
+use fuel_core_types::fuel_types::BlockHeight;
 use tokio::sync::broadcast;
 
 mod genesis;
 mod reserved_nodes;
 
-use genesis::*;
+use genesis::genesis_config;
 use reserved_nodes::reserved_nodes;
 
-pub unsafe fn from_slice_unchecked<const N: usize>(buf: &[u8]) -> [u8; N] {
+pub const unsafe fn from_slice_unchecked<const N: usize>(buf: &[u8]) -> [u8; N] {
     let ptr = buf.as_ptr() as *const [u8; N];
 
     // Static assertions are not applicable to runtime length check (e.g. slices).
@@ -23,13 +22,7 @@ pub unsafe fn from_slice_unchecked<const N: usize>(buf: &[u8]) -> [u8; N] {
 async fn main() -> anyhow::Result<()> {
     let mut highest_block_height = 0;
 
-    let genesis = Genesis {
-        chain_config_hash: unsafe { Bytes32::new(from_slice_unchecked(&CHAIN_CONFIG_HASH)) },
-        coins_root: unsafe { Bytes32::new(from_slice_unchecked(&COINS_ROOT)) },
-        contracts_root: unsafe { Bytes32::new(from_slice_unchecked(&CONTRACTS_ROOT)) },
-        messages_root: unsafe { Bytes32::new(from_slice_unchecked(&MESSAGES_ROOT)) },
-        transactions_root: unsafe { Bytes32::new(from_slice_unchecked(&TRANSACTIONS_ROOT)) },
-    };
+    let genesis = genesis_config();
 
     let mut cfg = Config::default("Ignition");
 
@@ -61,6 +54,7 @@ async fn main() -> anyhow::Result<()> {
                             if *block_height > highest_block_height {
                                 highest_block_height = *block_height;
                                 println!("{}", highest_block_height);
+                                p2p_service.update_block_height(BlockHeight::from(highest_block_height));
                             }
                         }
                         _ => {}

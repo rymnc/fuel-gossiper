@@ -35,12 +35,33 @@ fn main() -> anyhow::Result<()> {
 
     let output = format!(
         "\n
+    use fuel_core_types::fuel_tx::Bytes32;
+    use fuel_core_types::blockchain::consensus::Genesis;
+
+
     /// mainnet genesis block config
-    pub const CHAIN_CONFIG_HASH: &[u8] = &{:?};
-    pub const COINS_ROOT: &[u8] = &{:?};
-    pub const CONTRACTS_ROOT: &[u8] = &{:?};
-    pub const MESSAGES_ROOT: &[u8] = &{:?};
-    pub const TRANSACTIONS_ROOT: &[u8] = &{:?};
+    const unsafe fn from_slice_unchecked<const N: usize>(buf: &[u8]) -> [u8; N] {{
+        let ptr = buf.as_ptr() as *const [u8; N];
+        // Static assertions are not applicable to runtime length check (e.g. slices).
+        // This is safe if the size of `bytes` is consistent to `N`
+        *ptr
+    }}
+    const CHAIN_CONFIG_HASH: Bytes32 = unsafe {{ Bytes32::new(from_slice_unchecked(&{:?})) }};
+    const COINS_ROOT: Bytes32 = unsafe {{ Bytes32::new(from_slice_unchecked(&{:?})) }};
+    const CONTRACTS_ROOT: Bytes32 = unsafe {{ Bytes32::new(from_slice_unchecked(&{:?})) }};
+    const MESSAGES_ROOT: Bytes32 = unsafe {{ Bytes32::new(from_slice_unchecked(&{:?})) }};
+    const TRANSACTIONS_ROOT: Bytes32 = unsafe {{ Bytes32::new(from_slice_unchecked(&{:?})) }};
+
+    #[inline]
+    pub const fn genesis_config() -> Genesis {{
+        Genesis {{
+            chain_config_hash: CHAIN_CONFIG_HASH,
+            coins_root: COINS_ROOT,
+            contracts_root: CONTRACTS_ROOT,
+            messages_root: MESSAGES_ROOT,
+            transactions_root: TRANSACTIONS_ROOT,
+        }}
+    }}
     ",
         genesis.chain_config_hash.as_slice(),
         genesis.coins_root.as_slice(),
@@ -69,11 +90,11 @@ fn main() -> anyhow::Result<()> {
 
     let output = format!(
         "\n
-    pub const RESERVED_NODE_A: &'static [u8] = &{:?};
-    pub const RESERVED_NODE_B: &'static [u8] = &{:?};
-    pub const RESERVED_NODE_C: &'static [u8] = &{:?};
-    pub const RESERVED_NODE_D: &'static [u8] = &{:?};
-    pub const RESERVED_NODE_E: &'static [u8] = &{:?};
+    const RESERVED_NODE_A: &'static [u8] = &{:?};
+    const RESERVED_NODE_B: &'static [u8] = &{:?};
+    const RESERVED_NODE_C: &'static [u8] = &{:?};
+    const RESERVED_NODE_D: &'static [u8] = &{:?};
+    const RESERVED_NODE_E: &'static [u8] = &{:?};
     use fuel_core_p2p::Multiaddr;
     pub fn reserved_nodes() -> Vec<Multiaddr> {{
         vec![Multiaddr::from_static(RESERVED_NODE_A), Multiaddr::from_static(RESERVED_NODE_B), Multiaddr::from_static(RESERVED_NODE_C), Multiaddr::from_static(RESERVED_NODE_D), Multiaddr::from_static(RESERVED_NODE_E)]
