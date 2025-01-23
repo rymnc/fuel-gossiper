@@ -12,6 +12,8 @@ use reserved_nodes::reserved_nodes;
 
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
+    tracing_subscriber::fmt().init();
+
     let mut highest_block_height = 0;
 
     let genesis = genesis_config();
@@ -43,7 +45,7 @@ async fn main() -> anyhow::Result<()> {
                         // Update highest block height only if a new value is received
                         if *block_height > highest_block_height {
                             highest_block_height = *block_height;
-                            println!("{}", highest_block_height);
+                            tracing::info!("Highest block height: {}", highest_block_height);
 
                             // Update P2P service with the new block height
                             p2p_service.update_block_height(BlockHeight::from(highest_block_height));
