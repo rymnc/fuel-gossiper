@@ -1,5 +1,5 @@
 use fuel_core_p2p::codecs::postcard::PostcardCodec;
-use fuel_core_p2p::config::Config;
+use fuel_core_p2p::config::{convert_to_libp2p_keypair, Config};
 use fuel_core_p2p::p2p_service::{FuelP2PEvent, FuelP2PService};
 use fuel_core_types::fuel_types::BlockHeight;
 use multiaddr::Multiaddr;
@@ -26,12 +26,22 @@ async fn main() -> anyhow::Result<()> {
     let mut cfg = Config::default("Ignition");
 
     cfg.reserved_nodes_only_mode = true;
+
+
+    let keypair = std::env::var("KEYPAIR")?;
+    let secret = fuel_core_types::fuel_crypto::SecretKey::from_str(&keypair)?;
+    let keypair = convert_to_libp2p_keypair(&mut secret.to_vec())?;
+
+    cfg.keypair = keypair;
     cfg.set_connection_keep_alive = Duration::from_secs(60);
-    cfg.reserved_nodes = if args.len() == 2 {
-        let node_str = args.last().unwrap();
-        let multiaddr = Multiaddr::from_str(node_str)?;
-        tracing::info!("Connecting to overriden reserved node: {}", multiaddr);
-        vec![multiaddr]
+    cfg.reserved_nodes = if args.len() >= 2 {
+        let nodes = args.iter().skip(1).cloned().collect::<Vec<String>>();
+        let multiaddrs = nodes
+            .iter()
+            .map(|node| Multiaddr::from_str(node).unwrap())
+            .collect::<Vec<Multiaddr>>();
+        tracing::info!("Connecting to overriden reserved nodes: {:?}", multiaddrs);
+        multiaddrs
     } else {
         reserved_nodes()
     };
