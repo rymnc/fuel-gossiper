@@ -2,6 +2,9 @@ use fuel_core_p2p::codecs::postcard::PostcardCodec;
 use fuel_core_p2p::config::Config;
 use fuel_core_p2p::p2p_service::{FuelP2PEvent, FuelP2PService};
 use fuel_core_types::fuel_types::BlockHeight;
+use multiaddr::Multiaddr;
+use std::str::FromStr;
+use std::time::Duration;
 use tokio::sync::broadcast;
 
 mod genesis;
@@ -14,14 +17,31 @@ use reserved_nodes::reserved_nodes;
 async fn main() -> anyhow::Result<()> {
     tracing_subscriber::fmt().init();
 
+    let args: Vec<String> = std::env::args().collect();
+
     let mut highest_block_height = 0;
 
     let genesis = genesis_config();
 
     let mut cfg = Config::default("Ignition");
 
-    cfg.reserved_nodes_only_mode = false;
-    cfg.reserved_nodes = reserved_nodes();
+    cfg.reserved_nodes_only_mode = true;
+    cfg.set_connection_keep_alive = Duration::from_secs(60);
+    cfg.reserved_nodes = if args.len() == 2 {
+        let node_str = args.last().unwrap();
+        let multiaddr = Multiaddr::from_str(node_str)?;
+        tracing::info!("Connecting to overriden reserved node: {}", multiaddr);
+        vec![multiaddr]
+    } else {
+        reserved_nodes()
+    };
+
+    cfg.max_txs_per_request = 0;
+    cfg.max_block_size = 0;
+    cfg.max_connections_per_peer = 1;
+    cfg.max_headers_per_request = 0;
+    cfg.heartbeat_check_interval = Duration::from_millis(50);
+    cfg.tcp_port = 9099;
 
     let (tx, _) = broadcast::channel(5);
     let mut p2p_service = FuelP2PService::new(
