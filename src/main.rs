@@ -20,7 +20,7 @@ async fn main() -> anyhow::Result<()> {
 
     let mut cfg = Config::default("Ignition");
 
-    cfg.reserved_nodes_only_mode = true;
+    cfg.reserved_nodes_only_mode = false;
     cfg.reserved_nodes = reserved_nodes();
 
     let (tx, _) = broadcast::channel(5);
