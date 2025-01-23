@@ -10,14 +10,6 @@ mod reserved_nodes;
 use genesis::genesis_config;
 use reserved_nodes::reserved_nodes;
 
-pub const unsafe fn from_slice_unchecked<const N: usize>(buf: &[u8]) -> [u8; N] {
-    let ptr = buf.as_ptr() as *const [u8; N];
-
-    // Static assertions are not applicable to runtime length check (e.g. slices).
-    // This is safe if the size of `bytes` is consistent to `N`
-    *ptr
-}
-
 #[tokio::main]
 async fn main() -> anyhow::Result<()> {
     let mut highest_block_height = 0;
