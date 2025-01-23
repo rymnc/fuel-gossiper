@@ -33,25 +33,22 @@ async fn main() -> anyhow::Result<()> {
 
     loop {
         tokio::select! {
-            biased;
-
             _ = tokio::signal::ctrl_c() => {
                 println!("\nCtrl-C received, shutting down...");
                 break;
             }
             some_event = p2p_service.next_event() => {
                 if let Some(event) = some_event {
-                    match event {
-                        FuelP2PEvent::PeerInfoUpdated{ block_height, .. } => {
-                            if *block_height > highest_block_height {
-                                highest_block_height = *block_height;
-                                println!("{}", highest_block_height);
-                                p2p_service.update_block_height(BlockHeight::from(highest_block_height));
-                            }
-                        }
-                        _ => {}
-                    }
+                    if let FuelP2PEvent::PeerInfoUpdated { block_height, .. } = event {
+                        // Update highest block height only if a new value is received
+                        if *block_height > highest_block_height {
+                            highest_block_height = *block_height;
+                            println!("{}", highest_block_height);
 
+                            // Update P2P service with the new block height
+                            p2p_service.update_block_height(BlockHeight::from(highest_block_height));
+                        }
+                    }
                 }
             }
         }
