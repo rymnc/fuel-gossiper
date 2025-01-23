@@ -82,7 +82,7 @@ fn main() -> anyhow::Result<()> {
 
     let output = format!(
         "\n
-    const RESERVED_NODE_E: &'static [u8] = &{:?};
+    const RESERVED_NODE_E: &[u8] = &{:?};
     use fuel_core_p2p::Multiaddr;
     pub fn reserved_nodes() -> Vec<Multiaddr> {{
         vec![

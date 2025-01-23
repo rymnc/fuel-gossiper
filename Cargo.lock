@@ -1265,6 +1265,7 @@ dependencies = [
  "fuel-core-p2p",
  "fuel-core-types",
  "multiaddr",
+ "tai64",
  "tokio",
  "tracing",
  "tracing-subscriber",

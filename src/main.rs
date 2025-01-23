@@ -5,6 +5,7 @@ use fuel_core_types::fuel_types::BlockHeight;
 use multiaddr::Multiaddr;
 use std::str::FromStr;
 use std::time::Duration;
+use tai64::Tai64N;
 use tokio::sync::broadcast;
 
 mod genesis;
@@ -26,7 +27,6 @@ async fn main() -> anyhow::Result<()> {
     let mut cfg = Config::default("Ignition");
 
     cfg.reserved_nodes_only_mode = true;
-
 
     let keypair = std::env::var("KEYPAIR")?;
     let secret = fuel_core_types::fuel_crypto::SecretKey::from_str(&keypair)?;
@@ -70,16 +70,15 @@ async fn main() -> anyhow::Result<()> {
                 break;
             }
             some_event = p2p_service.next_event() => {
-                if let Some(event) = some_event {
-                    if let FuelP2PEvent::PeerInfoUpdated { block_height, .. } = event {
-                        // Update highest block height only if a new value is received
-                        if *block_height > highest_block_height {
-                            highest_block_height = *block_height;
-                            tracing::info!("Highest block height: {}", highest_block_height);
+                if let Some(FuelP2PEvent::PeerInfoUpdated { block_height, .. }) = some_event {
+                    let now = Tai64N::now();
+                    // Update highest block height only if a new value is received
+                    if *block_height > highest_block_height {
+                        highest_block_height = *block_height;
+                        tracing::info!("Highest block height: {}, rx at: {:?}", highest_block_height, now);
 
-                            // Update P2P service with the new block height
-                            p2p_service.update_block_height(BlockHeight::from(highest_block_height));
-                        }
+                        // Update P2P service with the new block height
+                        p2p_service.update_block_height(BlockHeight::from(highest_block_height));
                     }
                 }
             }
