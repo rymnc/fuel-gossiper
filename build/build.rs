@@ -1,4 +1,3 @@
-use fuel_core_p2p::Multiaddr;
 use fuel_core_types::blockchain::consensus::Genesis;
 use fuel_core_types::fuel_tx::Bytes32;
 use std::fs;
@@ -9,11 +8,11 @@ fn main() -> anyhow::Result<()> {
 
     let genesis = Genesis {
         chain_config_hash: Bytes32::from_str(
-            "0x5e8d733174398710cdafad299ac89b4ef4782cd303882a1cd30304ccf18c270a",
+            "0xc640e8f84ae497a8fce0106a0176eb2411cd631d01039109da8aeebb61ddef68",
         )
         .map_err(|e| anyhow::anyhow!(e))?,
         coins_root: Bytes32::from_str(
-            "0xe3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+            "0x09c2002cdaa42cfa2304852a4466739c3079b2d82cf4aca538bd0b360bd4ee20",
         )
         .map_err(|e| anyhow::anyhow!(e))?,
         contracts_root: Bytes32::from_str(
@@ -75,27 +74,29 @@ fn main() -> anyhow::Result<()> {
 
     fs::write(&dest_path, output).map_err(|e| anyhow::anyhow!(e))?;
 
-    // // 2. the multiaddrs
-    let reserved_node_e = Multiaddr::from_str( "/dns/p2p-mainnet.fuel.network/tcp/30335/p2p/16Uiu2HAm5yqpTv1QVk3SepUYzeKXTWMuE2VqMWHq5qQLPR2Udg6s")?;
+    // // // 2. the multiaddrs
+    // let reserved_node_e = Multiaddr::from_str(
+    //     "/ip4/0.0.0.0/tcp/30333/p2p/16Uiu2HAmSrcZnrxMd67boCU281VCh5WGmXm24eawy64YoyuzAE29",
+    // )?;
 
-    let reserved_node_e_bytes = reserved_node_e.to_vec();
+    // let reserved_node_e_bytes = reserved_node_e.to_vec();
 
-    let output = format!(
-        "\n
-    const RESERVED_NODE_E: &[u8] = &{:?};
-    use fuel_core_p2p::Multiaddr;
-    pub fn reserved_nodes() -> Vec<Multiaddr> {{
-        vec![
-            Multiaddr::from_static(RESERVED_NODE_E)
-        ]
-    }}
-    ",
-        reserved_node_e_bytes
-    );
+    // let output = format!(
+    //     "\n
+    // const RESERVED_NODE_E: &[u8] = &{:?};
+    // use fuel_core_p2p::Multiaddr;
+    // pub fn reserved_nodes() -> Vec<Multiaddr> {{
+    //     vec![
+    //         Multiaddr::from_static(RESERVED_NODE_E)
+    //     ]
+    // }}
+    // ",
+    //     reserved_node_e_bytes
+    // );
 
-    let dest_path = std::path::Path::new(&out_dir).join("reserved_nodes.rs");
+    // let dest_path = std::path::Path::new(&out_dir).join("reserved_nodes.rs");
 
-    fs::write(&dest_path, output).map_err(|e| anyhow::anyhow!(e))?;
+    // fs::write(&dest_path, output).map_err(|e| anyhow::anyhow!(e))?;
 
     Ok(())
 }
